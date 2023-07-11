@@ -11,16 +11,16 @@ function markerSize(magnitude) {
     return magnitude * 5;
 }
 
-function markerColor(magnitude) {
-    if (magnitude <= 1) {
+function markerColor(depth) {
+    if (depth <= 1) {
         return "#daec92"
-    } else if (magnitude <= 2) {
+    } else if (depth <= 2) {
         return "#ecea92"
-    } else if (magnitude <= 3) {
+    } else if (depth <= 3) {
         return "#ecd592"
-    } else if (magnitude <= 4) {
+    } else if (depth <= 4) {
         return "#dfb778"
-    } else if (magnitude <= 5) {
+    } else if (depth <= 5) {
         return "#e5a05b"
     } else {
         return "#f58668"
@@ -32,7 +32,7 @@ function createFeatures(earthquakeData) {
   // Give each feature a popup describing the place and time of the earthquake
   function onEachFeature(feature, layer) {
     layer.bindPopup("<h3>" + feature.properties.place +
-      "</h3><hr><p>" + new Date(feature.properties.time) + "</p>" + "</h3><hr><p>" + "Magnitude: " + (feature.properties.mag) + "</p>");
+      "</h3><hr><p>" + new Date(feature.properties.time) + "</p>" + "</h3><hr><p>" + "depth:" + (feature.geometry.coordinates[2]) + "</p>");
   }
 
   // Create a GeoJSON layer containing the features array on the earthquakeData object
@@ -41,7 +41,7 @@ function createFeatures(earthquakeData) {
     pointToLayer: function(feature, latlng) {
         return L.circleMarker(latlng, {
             radius: markerSize(feature.properties.mag),
-            fillColor: markerColor(feature.properties.mag),
+            fillColor: markerColor(feature.geometry.coordinates[2]),
             color: "#000",
             weight: 0.3,
             opacity: 0.5,
@@ -116,20 +116,29 @@ function createMap(earthquakes) {
   var legend = L.control({ position: "bottomright" });
   legend.onAdd = function(map) {
       var div = L.DomUtil.create("div", "info legend");
-      magnitudes = [0, 1, 2, 3, 4, 5];
+      grades=[-10,10,30,50,70,90]
+      var colors = [
+        "#98ee00",
+        "#d4ee00",
+        "#eecc00",
+        "#ee9c00",
+        "#ea822c",
+        "#ea2c2c"
+      ];
       labels = [];
-      legendInfo = "<strong>Magnitude</strong>";
+      legendInfo = "<strong>depth</strong>";
       div.innerHTML = legendInfo;
+
+      for (var i = 0; i < grades.length; i++) {
+        div.innerHTML +='<i style="background:' + colors[i] + '"> </i>' + grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+')
+    }
       // push to labels array as list item
-      for (var i = 0; i < magnitudes.length; i++) {
-          labels.push('<li style="background-color:' + markerColor(magnitudes[i] + 1) + '"> <span>' + magnitudes[i] + (magnitudes[i + 1]
-               ? '&ndash;' + magnitudes[i + 1] + '' : '+') + '</span></li>');
-      }
+      
       // add label items to the div under the <ul> tag
-      div.innerHTML += "<ul>" + labels.join("") + "</ul>";
+     // div.innerHTML += "<ul>" + labels.join("") + "</ul>";
       return div;
   };
   // Add legend to the map
   legend.addTo(myMap);
-
+  
 };
